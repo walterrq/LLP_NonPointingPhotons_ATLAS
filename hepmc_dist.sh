@@ -1,15 +1,19 @@
-#Script para mandar los hepmc de los runs a la carpeta correspondiente
 #!/bin/bash
 
-folder_destiny="/home/cristian/Desktop/HEP_Jones/paper_2023/scripts_2208/data/raw"
+echo "hepmc dist"
+#echo $PWD
+
+folder_destiny="${2}/scripts_2208/data/raw"
 
 tipos="ZH WH TTH"
+
+mkdir -p "${folder_destiny}"
 
 for tipo in ${tipos}
 	do
 	#declare -a arr
-	folder_origin="/home/cristian/Programs/MG5_aMC_v2_9_2/HN_${tipo}/Events"
-	cd ${folder_origin}
+	folder_origin="${1}/val-HN_${tipo}/Events"
+	cd ${folder_origin} > /dev/null 2>&1
 	runs=( $(ls -d */) )
 	for run in "${runs[@]}"
 		do
@@ -24,9 +28,9 @@ for tipo in ${tipos}
 			gzip -dk "${file_gz}"
 		fi
 		file_mc=("$(ls -d *.hepmc)")
-		echo "${file_mc}"
+		#echo "${file_mc}"
 		file_final="$(echo "${file_mc}" | sed 's/_pythia8_events//')"
-		cp "${file_mc}" "${folder_destiny}/run_${file_final}"	
+		mv "${file_mc}" "${folder_destiny}/run_${file_final}"	
 		cd ..
 	done
 done
