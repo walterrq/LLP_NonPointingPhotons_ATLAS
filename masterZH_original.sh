@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #todo ejecutar desde collider
-cd limon #!Comentamos esto porque ya se monto en esta ubicacion
+cd llpatlas #!Comentamos esto porque ya se monto en esta ubicacion
 # $SHELL
 
 #Debuggeo simple
@@ -26,7 +26,7 @@ mkdir -p "${destiny_folder}/scripts_2208/data/raw"
 tar -xf heavNeff4_UFO.tar.xz -C "${madgraph_folder}/models/" #Descarga el UFO en las carpetas models de MG5
 
 ##? BEGIN FOR AWS INSTANCE
-sed -i 's+run_mode = 2+run_mode = 0+' ${madgraph_folder}/input/mg5_configuration.txt
+sed -i 's+run_mode = 2+run_mode = 7+' ${madgraph_folder}/input/mg5_configuration.txt
 ##TODO > La anterior linea reemplaza el multicore mode(2) con sigle-machine mode(0)
 ##sed -i 's+nb_core = 4+nb_core = 1+' ${madgraph_folder}/input/mg5_configuration.txt
 ##TODO > La anterior linea cambia el numero de cores usadas(de 4 a 1)
@@ -57,14 +57,14 @@ bash benchsZH.sh "$x1" "$madgraph_folder"
 bash hepmc_dist.sh "$madgraph_folder" "$destiny_folder"
 
 #todo con este comando extraemos los crossections
-#bash crossec_distZH.sh "$destiny_folder" "$madgraph_folder"
+bash crossec_distZH.sh "$destiny_folder" "$madgraph_folder"
 
 source ~/.bashrc 
 #todo Descomentamos esta linea para correr root en docker en la imagen especifica de lpphotons. Con esta linea se hace un update al bash para activar que el docker pueda correr root.
 #Con esto podemos delphes y root desde python
 
 cd ./scripts_2208/
-#todo Estamos en limon y entramos al scripts_2208 de limon
+#todo Estamos en llpatlas y entramos al scripts_2208 de llpatlas
 
 echo $PYTHONPATH
 bash analysis_master.sh "$x1" "$delphes_folder"  "$destiny_folder"

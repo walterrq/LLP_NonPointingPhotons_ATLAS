@@ -1,11 +1,11 @@
 #!/bin/bash
 
-cd limon #esta linea manda al bash dentro de la carpeta
+cd llpatlas #esta linea manda al bash dentro de la carpeta
 # se corre independientemente si se corre en docker o la computadora
 #cuando se corra en el dokcer, quizas si es necesario el SHELL
 #$SHELL
 
-x1=100000 #esto indica el numero de eventos que genera madgraph
+x1=10000 #esto indica el numero de eventos que genera madgraph
 
 #folder donde tenemos madgraph
 madgraph_folder="/Collider/MG5_aMC_v2_9_11"
@@ -32,7 +32,7 @@ destiny_folder="/Collider"
 #mkdir -p "${destiny_folder}/scripts_2208/data/raw" #crea la estructura para guardar los datos del analisis
 
 #the command extracts the contents of the specified compressed archive 
-#file (heavNeff4_UFO.tar.xz) that is in limon into the directory ${madgraph_folder}/models/
+#file (heavNeff4_UFO.tar.xz) that is in llpatlas into the directory ${madgraph_folder}/models/
 #tar -xf heavNeff4_UFO.tar.xz -C "${madgraph_folder}/models/"
 
 #el sed remplaza patrones (edita archivos de texto)
