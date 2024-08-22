@@ -12,6 +12,8 @@ from multiprocessing import Pool
 import matplotlib.pyplot as plt
 import os  
 
+#This code gives a hardcoded version to merge the by alphas in our search
+
 # Origin directory where the files are stored
 origin = "/Collider/scripts_2208/data/clean/"
 
@@ -36,14 +38,17 @@ jet_files_4 = [f for f in pickle_files if 'Alpha4_13_jets' in f]
 jet_files_5 = [f for f in pickle_files if 'Alpha5_13_jets' in f]
 jet_files_6 = [f for f in pickle_files if 'Alpha6_13_jets' in f]
 
-track_files_4 = [f for f in pickle_files if 'Alpha4_13_tracks' in f]
-track_files_5 = [f for f in pickle_files if 'Alpha5_13_tracks' in f]
-track_files_6 = [f for f in pickle_files if 'Alpha6_13_tracks' in f]
+efphoton_files_4 = [f for f in pickle_files if 'Alpha4_13_efphotons' in f]
+efphoton_files_5 = [f for f in pickle_files if 'Alpha5_13_efphotons' in f]
+efphoton_files_6 = [f for f in pickle_files if 'Alpha6_13_efphotons' in f]
+
+eftrack_files_4 = [f for f in pickle_files if 'Alpha4_13_eftracks' in f]
+eftrack_files_5 = [f for f in pickle_files if 'Alpha5_13_eftracks' in f]
+eftrack_files_6 = [f for f in pickle_files if 'Alpha6_13_eftracks' in f]
 
 ecal_files_4 = [f for f in pickle_files if 'Alpha4_13_ecals' in f]
 ecal_files_5 = [f for f in pickle_files if 'Alpha5_13_ecals' in f]
 ecal_files_6 = [f for f in pickle_files if 'Alpha6_13_ecals' in f]
-
 
 
 def merge_and_save(files, output_name):
@@ -69,9 +74,13 @@ merge_and_save(jet_files_4, "megajets_4.pickle")
 merge_and_save(jet_files_5, "megajets_5.pickle")
 merge_and_save(jet_files_6, "megajets_6.pickle")
 
-merge_and_save(track_files_4, "megatracks_4.pickle")
-merge_and_save(track_files_5, "megatracks_5.pickle")
-merge_and_save(track_files_6, "megatracks_6.pickle")
+merge_and_save(eftrack_files_4, "megatracks_4.pickle")
+merge_and_save(eftrack_files_5, "megatracks_5.pickle")
+merge_and_save(eftrack_files_6, "megatracks_6.pickle")
+
+merge_and_save(efphoton_files_4, "megaefphoton_4.pickle")
+merge_and_save(efphoton_files_5, "megaefphoton_5.pickle")
+merge_and_save(efphoton_files_6, "megaefphoton_6.pickle")
 
 merge_and_save(ecal_files_4, "megaecals_4.pickle")
 merge_and_save(ecal_files_5, "megaecals_5.pickle")

@@ -32,16 +32,17 @@ def main(input_file):
     branchJet = treeReader.UseBranch("Jet")
     branchElectron = treeReader.UseBranch("Electron")
     branchMuon = treeReader.UseBranch("Muon")
-    branchECal = treeReader.UseBranch("EFlowTrackECAL")
-    branchTrack = treeReader.UseBranch("Track")
+    branchFlowTrack = treeReader.UseBranch("EFlowTrack")
+    branchFlowPhoton = treeReader.UseBranch("EFlowPhoton")
     
 
     # Loop over all events
     photons = []
     jets = []
     leptons = []
-    tracks = []
-    ecals = []
+    eftrack = []
+    efphoton = []
+    depo_ecal = []
     #print(f"Number of Entries: {numberOfEntries}") #Commented by JJP
     for entry in range(numberOfEntries):
         # Load selected branches with data from specified event
@@ -71,12 +72,13 @@ def main(input_file):
             leptons.append({"N": entry, 'pdg': 13, "pt": mu.PT,
                                 "eta": mu.Eta, 'phi': mu.Phi, 'mass': 0.10566})
                         
-        for track in branchTrack:
-            tracks.append({"N": entry, "pt":track.PT, "eta":track.Eta, 'phi': track.Phi,})
+        for track in branchFlowTrack:
+            eftrack.append({"N": entry, "eta":track.Eta, 'phi': track.Phi,})
+            depo_ecal.append({"N": entry, "eta":track.Eta, 'phi': track.Phi})
             
-        for ecal in branchECal:
-            ecals.append({"N": entry, "pt":ecal.PT, "eta":ecal.Eta, 'phi': ecal.Phi,})
-
+        for fph in branchFlowPhoton:
+            efphoton.append({"N": entry, "eta":fph.Eta, 'phi': fph.Phi,})
+            depo_ecal.append({"N": entry, "eta":fph.Eta, 'phi': fph.Phi})
 
     #input_file.close()
     #Vaciamos de la memoria todo lo relacionado al chain
@@ -86,8 +88,10 @@ def main(input_file):
     df = pd.DataFrame(photons)
     df_jets = pd.DataFrame(jets)
     df_leps = pd.DataFrame(leptons)
-    df_tracks = pd.DataFrame(tracks)
-    df_ecals = pd.DataFrame(ecals)
+    df_eftrack = pd.DataFrame(eftrack)
+    df_efphoton = pd.DataFrame(efphoton)
+    df_ecal = pd.DataFrame(depo_ecal)
+
     
     #Si no hay particulas, hacemos un dataframe con el formato pero vacio, sin informacion
     if df.shape[0] == 0:
@@ -96,11 +100,13 @@ def main(input_file):
         df_jets = pd.DataFrame(columns=["N", "pt", "eta", 'phi', 'MET'])
     if df_leps.shape[0] == 0:
         df_leps = pd.DataFrame(columns=["N", "pdg", "pt", "eta", 'phi','mass'])
-    if df_tracks.shape[0] == 0:
-        df_tracks = pd.DataFrame(columns=["N", "pt", "eta", 'phi', 'MET'])
-    if df_ecals.shape[0] == 0:
-        df_ecals = pd.DataFrame(columns=["N", "pt", "eta", 'phi', 'MET'])
-        #print(df_jets)
+    if df_eftrack.shape[0] == 0:
+        df_eftrack = pd.DataFrame(columns=["N", "eta", 'phi'])
+    if df_efphoton.shape[0] == 0:
+        df_efphoton = pd.DataFrame(columns=["N", "eta", 'phi'])
+    if df_ecal.shape[0] == 0:
+        df_ecal = pd.DataFrame(columns=["N", "eta", 'phi'])
+    
     
     #El comando sort_values ordena los valores primero en base al numero de eventos, y luego, en base al pt (de mayor a menor(del mas energetico al menos energetico))
     df = df.sort_values(by=['N', 'pt'], ascending=[True, False])
@@ -139,18 +145,24 @@ def main(input_file):
     df_leps = df_leps.set_index(['N', 'id'])
     df_leps.to_pickle(out_file.replace('_photons', '_leptons'))
     
-    #Probablemente se necesite calbiar para tener en cuenta el R min 2do !!
-    df_tracks = df_tracks.sort_values(by=['N', 'pt'], ascending=[True, False])
-    g = df_tracks.groupby('N', as_index=False).cumcount()
-    df_tracks['id'] = g
-    df_tracks = df_tracks.set_index(['N', 'id'])
-    df_tracks.to_pickle(out_file.replace('_photons', '_tracks'))
-    
-    df_ecals = df_ecals.sort_values(by=['N', 'pt'], ascending=[True, False])
-    g = df_ecals.groupby('N', as_index=False).cumcount()
-    df_ecals['id'] = g
-    df_ecals = df_ecals.set_index(['N', 'id'])
-    df_ecals.to_pickle(out_file.replace('_photons', '_ecals'))
+    #The following lists wont be sorted by momentum.
+    df_eftrack = df_eftrack.sort_values(by=['N', 'eta'], ascending=[True, False])
+    g = df_eftrack.groupby('N', as_index=False).cumcount()
+    df_eftrack['id'] = g
+    df_eftrack = df_eftrack.set_index(['N', 'id'])
+    df_eftrack.to_pickle(out_file.replace('_photons', '_eftracks'))
+
+    df_efphoton = df_efphoton.sort_values(by=['N', 'eta'], ascending=[True, False])
+    g = df_efphoton.groupby('N', as_index=False).cumcount()
+    df_efphoton['id'] = g
+    df_efphoton = df_efphoton.set_index(['N', 'id'])
+    df_efphoton.to_pickle(out_file.replace('_photons', '_efphotons'))
+
+    df_ecal = df_ecal.sort_values(by=['N', 'eta'], ascending=[True, False])
+    g = df_ecal.groupby('N', as_index=False).cumcount()
+    df_ecal['id'] = g
+    df_ecal = df_ecal.set_index(['N', 'id'])
+    df_ecal.to_pickle(out_file.replace('_photons', '_ecals'))
     
     #print(df) #Commented by JJP
     return
