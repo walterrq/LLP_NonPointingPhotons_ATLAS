@@ -31,9 +31,9 @@ echo "Analysis master"
 # python 03_basic_root.py
 
  echo "04 basic analysis"
-python 04a_merge.py             #pickle merging
-#python 04b_basic_plot.py       #plot
-
+#python 04a_concat.py             #pickle merging
+#python 04x_reduce.py             #Only if needed, reduce number of events
+python 04c_deltaReflow.py         #Plot deltaR for eflowPhotons and eflowTracks
 
 # echo "06 full"
 #python 06_bins_after_Delphes_full.py "$1"
