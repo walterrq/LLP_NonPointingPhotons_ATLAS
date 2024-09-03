@@ -37,6 +37,8 @@ def calculate_delta_r(df_photons, df_leptons):
             photons = df_photons.loc[event]
             electrons = df_leptons.loc[event]
             
+            print("Event", event)
+
             # Extract phi and eta values as numpy arrays
             photon_phi = photons['phi'].values
             photon_eta = photons['eta'].values
@@ -63,7 +65,7 @@ def calculate_delta_r(df_photons, df_leptons):
 
     return min_delta_r_values
 
-def plot_delta_r_histogram(delta_r_values, alpha, destiny):
+def plot_delta_r_histogram(delta_r_values, alpha, destiny, output_name):
     """
     Plots and saves a histogram of ΔR values.
 
@@ -72,16 +74,17 @@ def plot_delta_r_histogram(delta_r_values, alpha, destiny):
     destiny (str): The directory where the histogram image will be saved.
     """
     plt.figure(figsize=(10, 6))
-    plt.hist(delta_r_values, bins=30, color='blue', edgecolor='black')
+    plt.hist(delta_r_values, bins=60, color='blue', edgecolor='black')
     plt.title(f'Histogram of ΔR between Most Energetic Photon and Electron {alpha.capitalize()}')
     plt.xlabel('ΔR')
     plt.ylabel('Frequency')
     
     # Save the histogram as a PNG file
-    plt.savefig(f"{destiny}/delta_r_histogram_{alpha}.png")
+    plt.savefig(f"{destiny}/{output_name}_{alpha}.png")
     
     # Optionally, display the plot
     plt.show()
+
 
 def reset_id_by_pt(electrons):
     """
@@ -130,8 +133,12 @@ for alpha in [4, 5, 6]:
 
     # Calculate ΔR values
     deltaR_ph_track = calculate_delta_r(efphotons, eftrack)
-    deltaR_ph_ecals = calculate_delta_r(efphotons, ecals)
-
+    print("Start phvstracks")
     # Plot ΔR histogram
-    plot_delta_r_histogram(deltaR_ph_track, alpha_s, destiny)
-    plot_delta_r_histogram(deltaR_ph_ecals, alpha_s, destiny)
+    plot_delta_r_histogram(deltaR_ph_track, alpha_s, destiny, 'efphVSeftrack')
+
+    # Calculate ΔR values
+    deltaR_ph_ecals = calculate_delta_r(efphotons, ecals)
+    print("Start phvsecals")
+    # Plot ΔR histogram
+    plot_delta_r_histogram(deltaR_ph_ecals, alpha_s, destiny, 'efphVSecals')

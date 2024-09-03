@@ -17,7 +17,7 @@ def main(in_file):
     os.system(f'cd {sys.argv[2]} && ./DelphesHepMC2 '
                 #f'/Collider/llpatlas/Delphes_cards/delphes_card_LLHNscanV5.tcl {out_file} {in_file} > /dev/null 2>&1')     
                 # We change the delphes card to obtain the tracks in branches.           
-                f'/Collider/llpatlas/Delphes_cards/delphes_card_LLHNscanV3_ATLAS.tcl {out_file} {in_file} > /dev/null 2>&1')
+                f'/Collider/llpatlas/Delphes_cards/delphes_card_LLHNscanVbasic.tcl {out_file} {in_file} > /dev/null 2>&1')
     return 
 destiny_base = './data/clean'
 types = ['ZH', "WH", "TTH"]
