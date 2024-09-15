@@ -1,0 +1,4 @@
+Displaced photons in ZH = 559
+Displaced photons in WH = 479
+Displaced photons in TTH = 234
+Total of displaced photons = 1272

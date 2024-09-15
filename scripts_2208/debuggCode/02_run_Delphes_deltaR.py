@@ -4,6 +4,12 @@ import os
 import glob
 from multiprocessing import Pool
 
+'''
+This code provides a run for different values of deltaR needed for the isolation conditions of the reconstructed
+photons. After this analysis, it was found that deltaR min = 10^-5 was the optimal.
+'''
+
+
 #This file collects direct inputs from masterZH.sh
 
 #The first input variable is root: where we want the outputs to be saved. $destiny_folder

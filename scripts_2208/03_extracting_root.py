@@ -16,9 +16,7 @@ def main(input_file):
     out_file = input_file.replace('.root','_photons.pickle')
     #out_file = out_file.replace(origin, destiny)
 
-    print(out_file)
-
-    #Create chain of root trees
+    # Create chain of root trees
     chain = ROOT.TChain("Delphes")
     chain.Add(input_file) #Add permite que se lea el root
     
@@ -36,7 +34,6 @@ def main(input_file):
     branchMuon = treeReader.UseBranch("Muon")
     branchFlowTrack = treeReader.UseBranch("EFlowTrackECAL")
     branchFlowPhoton = treeReader.UseBranch("EFlowPhoton")
-    
 
     # Loop over all events
     photons = []
@@ -59,21 +56,38 @@ def main(input_file):
 
         #print(branchPhoton, branchElectron, branchMuon)
         for ph in branchPhoton:
-            photons.append({"N": entry, "E":ph.E, "pt":ph.PT, "eta":ph.Eta, 'phi': ph.Phi,
+            #print(ph.PT, ph.Eta)
+            #Ponemos condiciones para que este dentro del barrel o en los endcaps
+            if ph.PT > 10 and (abs(ph.Eta) < 1.37 or 1.52 < abs(ph.Eta) < 2.37): 
+                #print(ph.Eta)
+                #Si se cumplen las condiciones anteriores, guarda en la lista de fotones en diccionarios
+                photons.append({"N": entry, "E":ph.E, "pt":ph.PT, "eta":ph.Eta, 'phi': ph.Phi,
                                 'z_origin': ph.ZOrigin, 'rel_tof': ph.RelativeT,'MET': miss})
 
-        for jet in branchJet:        
-            jets.append({"N": entry, "pt": jet.PT, "eta": jet.Eta, 'phi': jet.Phi})
+        for jet in branchJet:
+            #Condiciones para jets
+            if jet.PT > 25:
+                #Formula del rapidity en base a los atributos que si tenemos
+                y = np.log((jet.PT * np.sinh(jet.Eta) + np.sqrt(jet.Mass**2 +
+                    (jet.PT * np.cosh(jet.Eta))**2)) / (np.sqrt(jet.Mass**2 + jet.PT**2)))
+                if abs(y) < 4.4: 
+                    #Queremos la condicion que el rapidity sea < 4.4 porque se pide en el analisis
+                    #De ser asi, se guarda la informacion
+                    jets.append({"N": entry, "pt": jet.PT, "eta": jet.Eta, 'phi': jet.Phi})
 
         for e in branchElectron:
-            leptons.append({"N": entry, 'pdg': 11, "pt":e.PT,
+            #Condiciones para el electron
+            if e.PT > 10 and (abs(e.Eta) < 1.37 or 1.52 < abs(e.Eta) < 2.47):
+                leptons.append({"N": entry, 'pdg': 11, "pt":e.PT,
                                 "eta":e.Eta, 'phi': e.Phi, 'mass': 0.000511})
 
         for mu in branchMuon:
+            #Condiciones para el muon
             #El append genera una lista de diccionarios (para leptons, para jets, etc)
-            leptons.append({"N": entry, 'pdg': 13, "pt": mu.PT,
+            if mu.PT > 10 and abs(mu.Eta) < 2.7:
+                leptons.append({"N": entry, 'pdg': 13, "pt": mu.PT,
                                 "eta": mu.Eta, 'phi': mu.Phi, 'mass': 0.10566})
-                        
+                
         for track in branchFlowTrack:
             eftrack.append({"N": entry, "eta":track.Eta, 'phi': track.Phi, 'E': track.PT})
             depo_ecal.append({"N": entry, "eta":track.Eta, 'phi': track.Phi, 'E': track.PT})
@@ -93,22 +107,16 @@ def main(input_file):
     df_eftrack = pd.DataFrame(eftrack)
     df_efphoton = pd.DataFrame(efphoton)
     df_ecal = pd.DataFrame(depo_ecal)
-
     
-    #Si no hay particulas, hacemos un dataframe con el formato pero vacio, sin informacion
-    if df.shape[0] == 0:
-        df = pd.DataFrame(columns=["N", "E", "pt", "eta", 'phi', 'z_origin', 'rel_tof', 'MET'])
+    #Si el dataframe de fotones o leptones tiene 0 elementos, entonces no podemos hacer analiis sobre ese evento.
+    #Si sucede esto, imprimimos el shape y salimos.
+    #Si no hay jets, hacemos un dataframe con el formato pero vacio, sin informacion
+    if (df.shape[0] == 0) or (df_leps.shape[0] == 0):
+        print(df.shape,df_leps.shape)
+        return
     if df_jets.shape[0] == 0:
-        df_jets = pd.DataFrame(columns=["N", "pt", "eta", 'phi', 'MET'])
-    if df_leps.shape[0] == 0:
-        df_leps = pd.DataFrame(columns=["N", "pdg", "pt", "eta", 'phi','mass'])
-    if df_eftrack.shape[0] == 0:
-        df_eftrack = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
-    if df_efphoton.shape[0] == 0:
-        df_efphoton = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
-    if df_ecal.shape[0] == 0:
-        df_ecal = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
-    
+        df_jets = pd.DataFrame(columns=["N", "pt", "eta", 'phi','M', 'MET'])
+        #print(df_jets)
     
     #El comando sort_values ordena los valores primero en base al numero de eventos, y luego, en base al pt (de mayor a menor(del mas energetico al menos energetico))
     df = df.sort_values(by=['N', 'pt'], ascending=[True, False])
@@ -146,27 +154,15 @@ def main(input_file):
     df_leps['id'] = g
     df_leps = df_leps.set_index(['N', 'id'])
     df_leps.to_pickle(out_file.replace('_photons', '_leptons'))
-    
-    #The following lists wont be sorted by momentum.
-    df_eftrack = df_eftrack.sort_values(by=['N', 'eta'], ascending=[True, False])
-    g = df_eftrack.groupby('N', as_index=False).cumcount()
-    df_eftrack['id'] = g
-    df_eftrack = df_eftrack.set_index(['N', 'id'])
-    df_eftrack.to_pickle(out_file.replace('_photons', '_eftracks'))
-
-    df_efphoton = df_efphoton.sort_values(by=['N', 'eta'], ascending=[True, False])
-    g = df_efphoton.groupby('N', as_index=False).cumcount()
-    df_efphoton['id'] = g
-    df_efphoton = df_efphoton.set_index(['N', 'id'])
-    df_efphoton.to_pickle(out_file.replace('_photons', '_efphotons'))
-
-    df_ecal = df_ecal.sort_values(by=['N', 'eta'], ascending=[True, False])
-    g = df_ecal.groupby('N', as_index=False).cumcount()
-    df_ecal['id'] = g
-    df_ecal = df_ecal.set_index(['N', 'id'])
-    df_ecal.to_pickle(out_file.replace('_photons', '_ecals'))
-    
     #print(df) #Commented by JJP
+
+    if df_eftrack.shape[0] == 0:
+        df_eftrack = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
+    if df_efphoton.shape[0] == 0:
+        df_efphoton = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
+    if df_ecal.shape[0] == 0:
+        df_ecal = pd.DataFrame(columns=["N", "eta", 'phi', 'E'])
+
     return
 
 
@@ -181,23 +177,18 @@ ROOT.gInterpreter.Declare('#include "classes/DelphesClasses.h"') #Interpreto una
 ROOT.gInterpreter.Declare('#include "external/ExRootAnalysis/ExRootTreeReader.h"')
 
 
-
+origin = f"/Collider/scripts_2208/data/clean/"
+destiny = f"/Collider/scripts_2208/data/clean/"
 #destiny = f"/Collider/2023_LLHN_CONCYTEC/"
 
 types = ['ZH', "WH", "TTH"]
 tevs = [13]
-orders = ['3', '4', '5']
-alphas = ['4', '5', '6']
 
 allcases = []
 for typex in types[:]:
     for tevx in tevs[:]:
-        for order in orders[:]:
-            for alpha in alphas[:]:
-                origin = f"/Collider/scripts_2208/data/clean/deltaR_change/Alpha{alpha}_dR{order}/"
-                destiny = f"/Collider/scripts_2208/data/clean/deltaR_change/Alpha{alpha}_dR{order}/"
-                for file_inx in sorted(glob.glob(origin + f"*{typex}*{tevx}*.root"))[:]:
-                    allcases.append(file_inx)
+        for file_inx in sorted(glob.glob(origin + f"*{typex}*{tevx}.root"))[:]:
+            allcases.append(file_inx)
 
 if __name__ == '__main__':
     #print(allcases) #Commented by JJP

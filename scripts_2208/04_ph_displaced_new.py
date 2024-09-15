@@ -286,6 +286,7 @@ def print_first_and_last_10(df):
     print("\nLast 10 rows of the DataFrame:")
     print(df.tail(10))
 
+"""
 def number_displaced(df_photons):
 
     # Get unique event indices
@@ -296,51 +297,8 @@ def number_displaced(df_photons):
         #print("Evento: ", event)
         # Check if the event has both photons and electrons
         if event in df_photons.index.get_level_values('N'):
-            # Extract photons in the event
-            photons = df_photons.loc[event]
-
-            #!print("photonsdataframe")
-            #!print(photons)
-            
-            # Extract z and t values as numpy arrays
-            photon_zori = photons['z_origin'].values
-            photon_relt = photons['rel_tof'].values
-            
-            #!print("photons z_origin")
-            #!print(photon_zori)
-            #!print("photons rel_tof")
-            #!print(photon_relt)
-            
-
-            zori_relt = np.column_stack((photon_zori, photon_relt))
-            #!print("column Stack")
-            #!print(zori_relt)
-
-
-            mask = (zori_relt[:, 0] > 300.) & (zori_relt[:, 1] > 1.) #We identify a displaced photon as z_origin>300 and rel_tof > 1,5 (this changes depending on the channel photon or multiphoton)
-            
-            #!print("Mask:")
-            #!print(mask)
-
-            i = np.sum(mask)
-            #!print("i Value:")
-            #!print(i)
-        j=j+i
-        #!print("j Value:")
-        #!print(j)
-    return j
-
-def number_displaced_min(df_photons, df_leptons):
-
-    # Get unique event indices
-    events = df_photons.index.get_level_values('N').unique()
-    j=0
-    for event in events:
-        i=0
-        if event in df_photons.index.get_level_values('N') and event in df_leptons.index.get_level_values('N'):
             # Extract photons and electrons in the event
             photons = df_photons.loc[event]
-            electrons = df_leptons.loc[event]
 
             #!print("photonsdataframe")
             #!print(photons)
@@ -348,27 +306,6 @@ def number_displaced_min(df_photons, df_leptons):
             # Extract z and t values as numpy arrays
             photon_zori = photons['z_origin'].values
             photon_relt = photons['rel_tof'].values
-
-            photon_phi = photons['phi'].values
-            photon_eta = photons['eta'].values
-            lepton_phi = electrons['phi'].values
-            lepton_eta = electrons['eta'].values
-
-            # Calculate Δphi and Δη using numpy broadcasting (outer subtraction)
-            delta_phi = np.subtract.outer(photon_phi, lepton_phi)
-            delta_eta = np.subtract.outer(photon_eta, lepton_eta)
-
-            # Calculate ΔR for all photon-electron pairs
-            delta_r = np.sqrt(delta_phi**2 + delta_eta**2)
-
-            # Ignore ΔR values that are too small
-            #mandamos a infinito los que tienen cero para que asi nunca puedan ser seleccionados
-            delta_r = np.where(delta_r > 1e-15, delta_r, np.inf)
-
-            # Find the minimum ΔR for each photon
-            min_delta_r_per_photon = np.min(delta_r, axis=1)
-            print("ddata")
-            print(min_delta_r_per_photon)
             
             #!print("photons z_origin")
             #!print(photon_zori)
@@ -393,6 +330,7 @@ def number_displaced_min(df_photons, df_leptons):
         #!print("j Value:")
         #!print(j)
     return j
+"""
 
 def plot_delta_r_histogram(delta_r_values, alpha, destiny, output_name):
     """
@@ -487,45 +425,94 @@ def txt_compilation(displaced_list, alpha, destiny):
 
     print(f"File saved as {file_path}")
 
-def txt_compilation_min(displaced_list, alpha, destiny):
+def number_displaced(df_photons, df_leptons, deltaR_min_Exponent):
     """
-    Creates a text file with details about displaced photons.
+    Calculates the minimum ΔR between each photon and all electrons in each event,
+    and stores the minimum ΔR for each photon.
 
     Parameters:
-    - displaced_list (numpy.ndarray): Array containing the number of displaced photons for different types.
-    - alpha (int or float): A number to include in the filename.
+    df_photons (DataFrame): The DataFrame containing photon data.
+    df_leptons (DataFrame): The DataFrame containing lepton data.
 
-    The function creates a text file 'doc_{alpha}.txt' in the 'destiny' directory.
+    Returns:
+    min_delta_r_values (numpy array): An array of minimum ΔR values for each photon in each event.
     """
-    # Ensure displaced_list is a numpy array
-    if not isinstance(displaced_list, np.ndarray):
-        raise TypeError("displaced_list must be a numpy array")
 
-    # Check if displaced_list has the correct length
-    if displaced_list.shape[0] != 3:
-        raise ValueError("displaced_list must contain exactly 3 elements")
+    number_displaced = 0
+    delta_r_min = 10 ** (-deltaR_min_Exponent)
+    min_delta_r_values = np.array([])
 
-    # Prepare content
-    content = (
-        f"Displaced photons in ZH = {displaced_list[0]}\n"
-        f"Displaced photons in WH = {displaced_list[1]}\n"
-        f"Displaced photons in TTH = {displaced_list[2]}\n"
-        f"Total of displaced photons = {displaced_list.sum()}\n"
-    )
+    # Get unique event indices
+    events = df_photons.index.get_level_values('N').unique()
 
-    # Define the destination directory and file path
-    file_name = f"disp_ph_min_{alpha}.txt"
-    file_path = os.path.join(destiny, file_name)
+    for event in events:
 
-    # Create the destination directory if it doesn't exist
-    if not os.path.exists(destiny):
-        os.makedirs(destiny)
+        #print("Evento: ", event)
+        # Check if the event has both photons and electrons
+        if event in df_photons.index.get_level_values('N') and event in df_leptons.index.get_level_values('N'):
+            # Extract photons and electrons in the event
+            photons = df_photons.loc[event]
+            electrons = df_leptons.loc[event]
 
-    # Write content to the file
-    with open(file_path, 'w') as file:
-        file.write(content)
+            #print("photonsdataframe")
+            #print(photons)
+            #print("electronsdataframe")
+            #print(electrons)
+            
+            # Extract phi and eta values as numpy arrays
+            photon_phi = photons['phi'].values
+            photon_eta = photons['eta'].values
+            lepton_phi = electrons['phi'].values
+            lepton_eta = electrons['eta'].values
+            
+            # Calculate Δphi and Δη using numpy broadcasting (outer subtraction)
+            delta_phi = np.subtract.outer(photon_phi, lepton_phi)
+            delta_eta = np.subtract.outer(photon_eta, lepton_eta)
+        
+            
+            # Calculate ΔR for all photon-electron pairs
+            delta_r = np.sqrt(delta_phi**2 + delta_eta**2)
+            
+            #print("deltar antes de corte:")
+            #print(delta_r)
 
-    print(f"File saved as {file_path}")
+
+            # Ignore ΔR values that are too small
+            #mandamos a infinito los que tienen cero para que asi nunca puedan ser seleccionados
+            delta_r = np.where(delta_r > 1e-15, delta_r, np.inf)
+            
+            #print("deltar despues de corte: ")
+            #print(delta_r)
+            
+            # Find the minimum ΔR for each photon
+            min_delta_r_per_photon = np.min(delta_r, axis=1)
+            #min_delta_r_index = np.argmin(delta_r, axis=1)
+
+            #if(min_delta_r_per_photon < 0.01 and photon_z_origin > 0 and rel_tof > 0):
+            #    print("El foton esta desplazado y su deltaR es menor a 0.01")
+            #print("min_delta_r_per_photon")
+            #print(min_delta_r_per_photon)
+
+            for i, min_delta_r in enumerate(min_delta_r_per_photon):
+                if min_delta_r > delta_r_min :
+                    # Print z_origin and rel_tof for the photon
+                    #print(f"Photon {i} has min_delta_r {min_delta_r} < {delta_r_min} ")
+                    #print(f"z_origin: {photons.iloc[i]['z_origin']}")
+                    #print(f"rel_tof: {photons.iloc[i]['rel_tof']}")
+                    z_origin = photons.iloc[i]['z_origin']
+                    rel_tof = photons.iloc[i]['rel_tof']
+
+                    if (z_origin > 300 and rel_tof > 1):
+                        
+                        number_displaced = number_displaced +1
+                        #print("number_displaced: ", number_displaced)
+
+            #print("min_delta_r_per_photon: ", min_delta_r_per_photon)
+            
+            # Append the minimum ΔR for each photon in this event to the result array
+            #min_delta_r_values = np.append(min_delta_r_values, min_delta_r_per_photon)
+
+    return number_displaced
 
 origin = "/Collider/scripts_2208/data/clean/"
 #destiny = f"./data/deltaR_nomerge/"
@@ -579,13 +566,14 @@ for deltaR_min in deltaR_mins:
                 alpha_s = str(alpha)
                 # Example usage:
 
-                displaced_events = number_displaced_min(photons, electrons)
+                displaced_events = number_displaced(photons, electrons, deltaR_min)
+               
                 disp_list_py.append(displaced_events)
                 disp_list = np.array(disp_list_py)
                 
             print (disp_list)
-            destiny = f"./data/deltaR_{deltaR_min}/Channels/{mode}/"
+            destiny = f"./data/deltaR_{deltaR_min}/Channels/min/"
             Path(destiny).mkdir(exist_ok=True, parents=True)
-            txt_compilation_min(disp_list, alpha, destiny)
+            txt_compilation(disp_list, alpha, destiny)
 
     

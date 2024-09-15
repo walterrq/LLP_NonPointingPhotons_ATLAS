@@ -7,6 +7,12 @@ import ROOT
 import numpy as np
 from multiprocessing import Pool
 
+'''
+We extract info to validate isolation parameters. This does not represent the final information 
+the general code is working with. For an updated version check 03_extracting_root.py
+'''
+
+
 #Este script extrae los datos del Root que bota Delphes
 #Al final tendremos 3 dataframes: uno para leptones, otro para jets y otro para fotones
 

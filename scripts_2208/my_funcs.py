@@ -39,6 +39,12 @@ def isolation(phs, surr, obs, same=False, dR=0.2):
                         dr = dR*1000
                     if dr < dR:
                         cone += row_d[obs]
+                        # print("obs")
+                        # print(obs)
+                        # print("Row_d")
+                        # print(row_d[obs])
+                        # print("cone")
+                        # print(cone)
                 phs_list.append(cone)
         except KeyError:
             phs_list.extend([0]*len(event_ph))

@@ -17,7 +17,18 @@ echo "Analysis master"
 
 #!Start of debugging
 #The following code was constructed to review the analysis and debugging. It can be ignored for a more direct approach and skip to 04_bins_after_Delphes.py
+# echo "04 basic analysis"
+#python 04x_reduce.py             #Only if needed, reduce number of events
 #python 04c_deltaReflow.py         #Plot deltaR for eflowPhotons and eflowTracks
+#python 04_deltaR_manual_noindex.py
+#python 04_deltaR_dfpickle_opt.py
+#python 04_deltaR_correct_merge.py
+
+# The following lines are for analysing an optimal deltaR min in the delphes cards
+#python 04_deltaR_run.py            #Analise different deltarR from different delphes 
+#python 04_deltaR_run_merge.py
+#python 04_ph_displaced.py
+#python 04_ph_displaced_new.py #Analysis of only deltaR minimum with optimal deltaR
 
 #!Finish of debugging
 
@@ -25,16 +36,19 @@ echo "Analysis master"
 # echo "04 bins after Delphes"
 #python 04_bins_after_Delphes.py "$1"
 
- echo "04 bins after Delphes run Jet isolation"
-python 04_bins_after_Delphes_jetiso.py "$1"
 
-# echo "05"
-#python 05a_validation_graphs.py
+#compare
+#python comparehepmc.py
+#python comparewrite.py
 
-#echo "08"
-#python 08_s95_graphs.py
+#!final
 
+#python comparewriteoptm.py
 
+#python comparehepmc_new.py
+#python comparewrite.py
+# echo "07"
+#python 07_making_graphs.py
 # echo "07a"
 #python "07a_making_graphs (copy).py"
 # echo "07a_alpha_it"
