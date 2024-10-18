@@ -13,10 +13,8 @@
 #todo AWS_BATCH_JOB_ARRAY_INDEX es una variable por default cuando se corre una instancia en el amazon web service.  Si corremos 60 computadoras al mismo tiempo, AWS_BATCH_JOB_ARRAY_INDEX = 0 la primera vez, =1 la segunda, y asi sucesivamente
 # line=1
 
-###?
 
 benches=() #Inicializa lista de nombres de param_cards
-###???Con que valor se inicializa benches?
 #benches1=$(sed -n '131,+8p' benchmarksX.txt)
 #benches1=$(sed -n '46,+2p' benchmarks.txt)
 #!Por ahora solo nos interesa la simulacion sobre un punto.

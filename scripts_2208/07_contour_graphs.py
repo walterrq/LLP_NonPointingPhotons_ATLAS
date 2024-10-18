@@ -46,7 +46,8 @@ deltas = ['01','15']
 events_up = {6.84578:['1'],3.84578:['2+'],6.84844:['1','2+']}
 sigmas_up = {0.042:['1'],0.022:['2+'],0.041:['1','2+']}
 
-#Los expected background (sigmas), salen del paper Search for displaced photons produced in exotic decays of the Higgs boson using 13 TeV pp collisions with the ATLAS detector.
+#Los expected background (sigmas), salen del paper Search for displaced photons produced in exotic decays of the Higgs boson using 
+# 13 TeV pp collisions with the ATLAS detector.
 #Esto representa el tope de eventos o sigmas maximos
 #Hacemos esta comparacion con el sigma de -> BR * Lum * sigma = N
 #Luego dividimos los sigmas
@@ -61,11 +62,11 @@ for delta in deltas[1:]:
     destiny = f"./data/"
     names = list(sorted(glob.glob(origin + f"bin_*.json")))
     #for n_up, channels in events_up.items():
-    print('0')
-    print(names)
+    # print('0')
+    # print(names)
     for s_up, channels in sigmas_up.items():
-        print('0.5')
-        print(channels)
+        # print('0.5')
+        # print(channels)
         ## Opening the files and assigning mass and alpha as tag
         values=[]
         for name in names[:]:
@@ -73,8 +74,8 @@ for delta in deltas[1:]:
             mass = float(re.search(f'/.*M(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
             alpha = float(re.search(f'/.*Alpha(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
             
-            print("printeamos alpha")
-            print(alpha)
+            # print("printeamos alpha")
+            # print(alpha)
             
             #We know alpha and have delta fixed
             proccess = re.search(f'/.*_13-(.*).json', name).group(1)
@@ -83,11 +84,11 @@ for delta in deltas[1:]:
                 info = json.load(file)
                 #de info solo nos interesa el canal
                 #queremos el ultimo bin de z, t y met
-            print('0.75')
+            # print('0.75')
             
             info = [np.asarray(info[ch])[-1,-1,-1] for ch in channels]
-            print('1')
-            print(info)
+            # print('1')
+            # print(info)
             #sys.exit()
             values.append([(mass,alpha),(proccess,sum(info))])
             #En sum, se esta sumando los eventos del ultimo bin de z, t con el met signal.
@@ -98,15 +99,15 @@ for delta in deltas[1:]:
         #Se esta creando un diccionario de la siguiente forma:
         # {(m,a): [("WH", 2.4), ("ZH", 1.2), ("TTH", 0.5)]}
         
-        print('2')
-        print(values)
+        # print('2')
+        # print(values)
         
         points = {}
         for value in values:
             #Se hace una lista vacia por default.
             points.setdefault(value[0], []).append(value[-1])
-        print('3')
-        print(points)
+        # print('3')
+        # print(points)
         
         
         '''
@@ -122,7 +123,8 @@ for delta in deltas[1:]:
         #Hacemos un dic comprehension:
         #Para key y value, conserva solo los que tengan un name igual a 3. Es decir, que se tengan los tres procesos.
         #Lo hacemos como safeguard.
-        #No tendremos una comparacion correcta de BR si es que una de la combinacion de las masas y alphas solo tienen TTH o solo TTZ WH, o solo WH ZH, etc
+        #No tendremos una comparacion correcta de BR si es que una de la combinacion de las masas y alphas solo tienen TTH o solo 
+        # TTZ WH, o solo WH ZH, etc
         #Se hace un analisis de todos los procesos
         #Necesitamos que hayan los 3 
         #Si no hay, descartamos la combinacion de masa y alfa. Descartamos ese punto.
@@ -131,18 +133,21 @@ for delta in deltas[1:]:
         #Comentamos por recomendacion de cristian
         #points = {key: val for key, val in points.items()}# if key[0] >2 and key[1] < 8}
         
-        print('4')
-        print(points)
+        # print('4')
+        # print(points)
         #sys.exit()
         # Sum all the channels
         points = {key: sum(val) for key, val in points.items()}
+        # print('5')
+        # print(points)
 
         # Get the branching ratio
         #COMENTAMOS EL NON_POINTS PORQUE SEGUN CRISTIAN NO ES IMPORTANTE
         #not_points = [key for key, val in points.items() if val == 0]
         #points = {key: 100 * n_up/(val/0.2) for key, val in points.items() if val > 0 }#and key[0]%1==0 and key[1]%1==0}
         points = {key: 100 * s_up/(val/(139 * 0.2)) for key, val in points.items() if val > 0 }#and key[0]%1==0 and key[1]%1==0}
-        #Lo que obtenemos de 100 * s_up/(val/(139 * 0.2) es el BR correspondiente al de higgs a neutrinos pesados maximo para llegar a l verdadero.
+        #Lo que obtenemos de 100 * s_up/(val/(139 * 0.2) es el BR correspondiente al de higgs a neutrinos pesados maximo para llegar
+        #  a l verdadero.
         #*100 porque queremos en porcentaje
         #Solo hacemos si el numero de eventos es mayor a 0
         
@@ -152,8 +157,8 @@ for delta in deltas[1:]:
         
         #pd.DataFrame(data).to_csv(destiny + f'datapoints_{alpha}GeV-{"_".join(channels)}-Sigma.dat',index=False)
         pd.DataFrame(data).to_csv(destiny + f'datapoints_{delta}GeV-{"_".join(channels)}-Sigma.dat',index=False)
-        print('5')
-        print(data)
+        # print('5')
+        # print(data)
         
         #Aca generamos la masa con alfa y el BR maximo
         

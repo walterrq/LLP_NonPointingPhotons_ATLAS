@@ -21,8 +21,7 @@ vround = np.vectorize(round)
 #print(x) -> 5.77
 #Lo que hacemos con np.vectorize es que la funcion round pueda trabajar con vector, pues por default solo lo hace con escalares
 colores = {'60':'r','50':'g','40':'b','30':'m'}
-#PREGUNTARLE AL PROFESOR JONES QUE ES EL KFACTOR
-#En principio, es un valor experimental. Es un valor como para normalizar el numero de eventos. Cambia en base al proceso.
+#K factor is the number used to correct the number of events obtained by considering the effects of next to leading order processes. 
 k_factors = {'ZH':1.491,'WH':1.253,'TTH':1.15}
 
 for delta in deltas[:]:
@@ -53,16 +52,25 @@ for delta in deltas[:]:
             process = re.search(f'/.*_13-(.*).json', input_file).group(1)
             with open(input_file, 'r') as file:
                 cofre = json.load(file)
-            cofre = {key: k_factors[process]*np.asarray(matrix) for key, matrix in cofre.items()}
+            cofre = {key: k_factors[process]*np.asarray(matrix) for key, matrix in cofre.items()} #Multiplicamos la cantidad de eventos observados por el kfactor
             if burrito == []:
                 burrito = cofre
             else:
                 burrito = {key: burrito[key] + cofre[key] for key in cofre.keys()}
-            #print(burrito)
-        #print(burrito)
-        #sys.exit()
+        #     print("1burrito")
+        #     print(burrito)
+        # print("2burrito")
+        # print(burrito)
+        # sys.exit()
+        # print("burrito values")
+        # print(burrito.values())
+        
         norm = sum([x[:,:,-1].sum() for x in burrito.values()])
-        burrito = {key: value[:,:,-1]/norm for key, value in burrito.items()}
+        # print("Print Norm")
+        # print(norm)
+        burrito = {key: value[:,:,-1]/norm for key, value in burrito.items()} 
+        #! Here we clearly see that the validation graphs return not number of events but the normalized values
+        #! in order to show the fractions.
         #print(sum([x.sum() for x in burrito.values()]))
         #sys.exit()
 

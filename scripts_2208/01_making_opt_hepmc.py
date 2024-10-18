@@ -6,7 +6,7 @@ import re
 import pandas as pd
 from multiprocessing import Pool
 import numpy as np
-from my_funcs import my_arctan
+from my_funcs_vfinal import my_arctan
 import eta_functions_R_abs
 
 
@@ -591,6 +591,14 @@ for iteration in [True, False]:  # First iteration with True, second with False
             with Pool(1) as pool:
                 pool.map(main, allcases)
     else:
+        print("Exiting the program.")
+        break 
+
+    """
+    #This is only useful when we want informaiton regarding z_simple. 
+    #We comment it because when working with a final vesion is not needed.
+
+    else:
         # Second iteration: Ask the user if they want to generate the hepmc with zsimpl
         user_input = input("Do you want to generate the hepmc with zsimpl? (yes/no): ").strip().lower()
 
@@ -608,7 +616,9 @@ for iteration in [True, False]:  # First iteration with True, second with False
             if __name__ == '__main__':
                 with Pool(1) as pool:
                     pool.map(main, allcases)
+    """
 
+        
         
 # Record the end time
 end_time = time.time()

@@ -1,0 +1,4 @@
+If one wants to just compile the script folder files, the masterZH_direct.sh has to be changed for the one in LLP_NonPointingPhotons_ATLAS.
+masterZH.sh is the unedited file from Cristian
+masterZH_original.sh is the complete file with comments.
+In LLP_NonPointingPhotons_ATLAS, masterZH.sh is a clean version without comments. 

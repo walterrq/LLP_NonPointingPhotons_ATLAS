@@ -13,12 +13,17 @@ def extract(filenames):
         files = [stack.enter_context(open(fname,'r')) for fname in filenames]
         meats = [json.load(meat) for meat in files]
     numbers = [np.asarray(nums)[-1,-1,-1] for c in meats for nums in c.values()]
+    print("numbers")
+    print(numbers)
     return sum(numbers)
 
 
-origin = f"./data/matrices/"
+origin = f"./data/matrices_15/"
 destiny = f"./data/plot8"
-files = list(reversed(sorted(glob.glob(origin + f"bin_matrices-MN*.json"))))
+
+files = list(reversed(sorted(glob.glob(origin + f"bin_matrices-M*.json"))))
+print("printing files")
+print(files)
 times = list(set([re.search(f'/.*T(.+)_', a).group(1) for a in files]))
 times = map(lambda a: str(a).replace('.',','), sorted([float(x.replace(',','.')) for x in times]))
 times = list(times)
@@ -44,4 +49,5 @@ plt.xlim(0.3,100)
 plt.ylabel('BR(H -> NLSP NLSP) %')
 plt.title('NLSP: 60GeV - LSP: 0.5GeV')
 plt.legend()
+plt.savefig(f"{destiny}/plot.png") 
 plt.show()

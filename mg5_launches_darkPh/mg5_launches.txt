@@ -1,0 +1,23 @@
+# SETTING VARS
+import model DarkPhotonScalarLLP_UFO --modelname
+define allsm = g u c d s u~ c~ d~ s~ a ve vm vt e- mu- e+ mu+ t b t~ b~ z w+ h w- ta- ta+
+ 
+# ZH
+generate p p > z > h z, z > l+ l- @1 
+output /Collider/MG5_aMC_v2_9_11/val-HN_ZH
+y
+ 
+# WH
+generate p p > w+ > h w+, w+ > l+ vl @1 
+add process p p > w- > h w-, w- > l- vl~ @1
+output /Collider/MG5_aMC_v2_9_11/val-HN_WH
+y
+ 
+# TTH
+define el+ = e+ mu+ ta+
+define el- = e- mu- ta-
+generate p p > h t t~ HIG=0 QCD=2 QED=1 / u c d s, ( t > w+ b, w+ > el+ vl), ( t~ > w- b~, w- > j j) @1 
+add process p p > h t t~ HIG=0 QCD=2 QED=1 / u c d s, ( t > w+ b, w+ > j j), ( t~ > w- b~, w- > el- vl~) @1 
+add process p p > h t t~ HIG=0 QCD=2 QED=1 / u c d s, ( t > w+ b, w+ > el+ vl), ( t~ > w- b~, w- > el- vl~) @1 
+output /Collider/MG5_aMC_v2_9_11/val-HN_TTH
+y
