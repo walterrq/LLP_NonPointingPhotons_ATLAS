@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd 2023_LLHN_CONCYTEC
+cd llpatlas
 #$SHELL
 
 x1=100000
@@ -12,13 +12,10 @@ destiny_folder="/Collider"
 rm -rf "${destiny_folder}/scripts_2208"
 mkdir -p "${destiny_folder}/scripts_2208/data/raw"
 
-tar -xf DarkPhotonScalarLLP.tar.xz -C "${madgraph_folder}/models/"
+tar -xf heavNeff4_UFO.tar.xz -C "${madgraph_folder}/models/"
 
-sed -i 's+run_mode = 2+run_mode = 2+' ${madgraph_folder}/input/mg5_configuration.txt
-sed -i 's+nb_core = 10+nb_core = 4+' ${madgraph_folder}/input/mg5_configuration.txt
-
-mv "$madgraph_folder/madgraph/interface/madevent_interface.py" "$madgraph_folder/madgraph/interface/madevent_interface-default.py" 
-cp "./madevent_interface.py" "$madgraph_folder/madgraph/interface/madevent_interface.py" 
+#sed -i 's+run_mode = 2+run_mode = 0+' ${madgraph_folder}/input/mg5_configuration.txt
+#sed -i 's+nb_core = 4+nb_core = 1+' ${madgraph_folder}/input/mg5_configuration.txt
 
 sed "s|FOLDER|$madgraph_folder|g" mg5_launches.txt > mg5_launches_proper.txt
 

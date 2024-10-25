@@ -162,10 +162,10 @@ def main(variables):
     # print("leptons antes de isolation muon")
     # print(leptons)
 
-    print("Begin muon isolation")
+    #print("Begin muon isolation")
 
     muons = muon_isolation(leptons[leptons.pdg == 13], tracks, towers, 0.16)
-    print("End muon isolation")
+    #print("End muon isolation")
 
 
     #reiniciamos leptons para que tenga la estructura de siempre, pero con los muones filtrados

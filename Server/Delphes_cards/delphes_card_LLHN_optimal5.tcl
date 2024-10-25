@@ -799,6 +799,8 @@ module TreeWriter TreeWriter {
 
   add Branch ECal/eflowTracks EFlowTrackECAL Track
   add Branch ECal/eflowPhotons EFlowPhoton Tower
+  add Branch HCal/eflowTracks EFlowTrack Track
+  add Branch HCal/eflowNeutralHadrons EFlowNeutralHadron Tower
 
   add Branch PhotonEfficiency/photons Photon Photon
   add Branch ElectronEfficiency/electrons Electron Electron

@@ -8,10 +8,12 @@ from multiprocessing import Pool
 import numpy as np
 from my_funcs_vfinal import my_arctan
 import eta_functions_R_abs
+from functools import partial
 
 
 '''
-The idea now is not to create a HepMC file from scratch, but to edit only the additional lines of the original HepMC file.
+La idea ahora es no hacer un hepmc desde cero, si no editar solo las lineas extras del hepmc original.
+Este codigo optimizando diccionarios demora X segundos en compilar
 '''
 
 
@@ -89,7 +91,7 @@ def epsilonsevaluator(epsilon1,epsilon2,timepositiveR1, timenegativeR1, timeposi
     elif(timepositiveR1<timenegativeR2 and timepositiveR1>= 0):
         epsilon1 = 1
         epsilon2 = -1
-        print("Anomalous case")
+        print("caso anomalo")
         no_entro_a_ninguno = False
     elif(timenegativeR1<timepositiveR2 and timenegativeR1>= 0):
         epsilon1 = -1
@@ -101,7 +103,7 @@ def epsilonsevaluator(epsilon1,epsilon2,timepositiveR1, timenegativeR1, timeposi
         no_entro_a_ninguno = False
 
     if no_entro_a_ninguno:
-        sys.exit("Error, we didn't cover any of the time cases.")
+        sys.exit("error, no entramos a ningun caso del time")
 
     return epsilon1, epsilon2
 
@@ -157,6 +159,7 @@ def functiontheta(timei, r_n, p_gamma):
         #print("theta function walter", theta)
         return theta
     
+    #si sale para abajo, no sera el caso donde debemos escoger el tiempo negativo?
     else:
         print("tenemos theta mayor a pi:")
         print("p_gamma: ", p_gamma)
@@ -193,24 +196,21 @@ def main(parameters):
     
     global t_n
 
-    file_in, type, z_mode_atlas = parameters
+    file_in, type = parameters
 
     #print(file_in)
     #print(type)
     #print(z_mode)
     
     
-    #We extract the baseout and set the output file name (complete...hepmc)
+    #Extraemos el baseout y ponemos el nombre del archivo de salida (complete...hepmc)
     base_out = re.search(f'({type}.+)\.', file_in).group(1)
-    
-    if z_mode_atlas == True:  
-        file_out = destiny + f'full_op_{base_out}.hepmc'
-    else:  # If yes_zatlas is False
-        file_out = destiny + f'zsimp_full_op_{base_out}.hepmc'
+    file_out = destiny + f'full_op_{base_out}.hepmc'
 
     #sys.exit("Entro")
     #print(f'\nRUNNING: {base_out}') #Commented by JJP
 
+    #importante para emular codigo de Cristian
     it = 0 # Iterator for unnecessary lines
     i = 0
     limit = 2
@@ -221,11 +221,11 @@ def main(parameters):
     corte_sup = corte_inf + batch * 99999
     final_part_active = True
     
-    #We open the hepmc. One to read and the other to write
+    #Abrimos los hepmc. Uno para leer y otro para escribir
     #df = open(file_in, 'r')
     hepmc = open(file_in, 'r')
     new_hepmc = open(file_out, 'w')
-    #We are creating a hepmc. file from scratch
+    #Estamos creando desde cero un nuevo hepmc
     
 
     
@@ -269,7 +269,7 @@ def main(parameters):
                     #sentences = ''
                 #print(event)
             
-            elif line[0] == 'V': #If line is a vertex
+            elif line[0] == 'V': #si la linea es un vertice
                 outg = int(line[1])
                 info = *[float(x) for x in line[3:7]], int(line[8])  # x,y,z,ctau,number of outgoing particles
                 info=list(info)
@@ -298,8 +298,8 @@ def main(parameters):
                 es_foton_final = (abs(int(pdg)) == 22) and (in_vertex == 0)
                 
 
-                if(es_foton_final):#If the particle is a photon and is a final particle (if not negative)
-                    pid = int(line[1]) #We convert the ID to an integer because it is currently a string.
+                if(es_foton_final):#Si es que la particula es foton y es particula final (si no es negativo)
+                    pid = int(line[1]) #el id lo hacemos integer porque esta como string
                     pdg = line[2]
                     in_vertex = line[11]
             
@@ -312,6 +312,13 @@ def main(parameters):
                     pt = np.sqrt(px ** 2 + py ** 2)
                     Et = np.sqrt(mass_ph ** 2 + pt ** 2)
                     E = np.sqrt(mass_ph ** 2 + pt ** 2 + pz ** 2)
+
+                    #ATLASdet_radius= 1.5 #radio del detector de ATLAS
+                    #ATLASdet_semilength = 3.512 #Mitad de la longitud del radio de atlas (metros) (z_atlas)
+
+                    # Adjusting detector boundaries
+                    #r_detec = ATLASdet_radius * 1000  # m to mm
+                    #z_detec = ATLASdet_semilength * 1000
 
                     corte_inical =  pt >= 10.0 and not (r >= (r_detec) or abs(z) >= (z_detec))
                     
@@ -333,6 +340,82 @@ def main(parameters):
                 
                         c_z = v_z + (((v_ph - v_z) @ n_ph) / (d_z @ n_ph)) * d_z
 
+
+                        ###Empiza redundancia (mas adelante lo corregimos)
+                        p_vector = np.array([px, py, pz])
+                        r_n_vector = np.array([x, y, z])
+
+                        
+
+                        R1_meters = 1.500
+                        R2_meters = 1.590
+                        #pasamos a milimetros pues esas son las unidades estandard, caso contrario
+                        # multiplicamos por d_scaler el cual cambia las unidades a cm
+                        R1 = R1_meters * 1000 * d_scaler
+                        R2 = R2_meters * 1000 * d_scaler
+                        #print("R1 unidades: ", R1)
+                        #print("R2 unidades: ", R2)
+
+                        #sys.exit("Salimos")
+
+                        #print("pz fuera zsimp: ",pz)
+                        timepositiveR1 = timepositive(p_vector, r_n_vector, R1)
+                        timenegativeR1 = timenegative(p_vector, r_n_vector, R1)
+
+                        timepositiveR2 = timepositive(p_vector, r_n_vector, R2)
+                        timenegativeR2 = timenegative(p_vector, r_n_vector, R2)
+
+                        #print(timepositiveR1, timenegativeR1, timepositiveR2, timenegativeR2)
+
+                        if((timepositiveR1 < 0 and timenegativeR1 < 0) or (timepositiveR2 < 0 and timenegativeR2 < 0)):
+                            sys.exit("t < 0 salimos para analizar el problema")
+
+                        epsilon1 = 0
+                        epsilon2 = 0
+
+                        epsilon1, epsilon2 = epsilonsevaluator(epsilon1,epsilon2,timepositiveR1,timenegativeR1,timepositiveR2,timenegativeR2)
+
+                        #print("epsilon1, epsilon2: ",epsilon1, epsilon2)
+
+                        #definimos el signo real de los tiempos
+                        if(epsilon1 ==1):
+                            time1 = timepositiveR1
+                        else:
+                            time1 = timenegativeR1
+                            print("caso epsilon1 = -1")
+                        
+                        if(epsilon2 ==1):
+                            time2 = timepositiveR2
+                        else:
+                            time2 = timenegativeR2
+                            print("caso epsilon2 = -1")
+
+                        #print("time1: ", time1)
+                        angletheta1 = functiontheta(time1, r_n_vector, p_vector)
+                        #print("time2: ", time2)
+                        angletheta2 = functiontheta(time2, r_n_vector, p_vector)
+
+                        #print("time1: ", time1)
+                        #angletheta1tasi = functiontheta2(time1, r_n_vector, p_vector)
+                        #print("time2: ", time2)
+                        #angletheta2tasi = functiontheta2(time2, r_n_vector, p_vector)
+
+                        #error_theta1 = abs((angletheta1 - angletheta1tasi)/angletheta1)*100
+                        #error_theta2 = abs((angletheta2 - angletheta2tasi)/angletheta2)
+
+                        #if(error_theta1 > 1 or error_theta2 > 1):
+                        #    print("discrepancia entre angulos: ", angletheta1, angletheta2, angletheta1tasi, angletheta2tasi)
+                        eta1 = eta_function(angletheta1)
+                        eta2 = eta_function(angletheta2)
+                        
+                        #print("eta1, eta2 main: ", eta1,eta2)
+                        R1, R2 = eta_functions_R_abs.eta_func_R_abs(eta1,eta2)*d_scaler
+                        #print("R1 y R2: ",R1,R2)
+
+                        #zsimpl_value = zsimpl(p_vector, r_n_vector)
+                        z_atlas_value = z_atlas(p_vector, r_n_vector, R1, R2, epsilon1, epsilon2)
+                        ### Finaliza redundancia
+
                         #calculamos t_n
                         try:                                                         
                             vertex_n = int(holder['n5'][vertex][-1])
@@ -343,101 +426,7 @@ def main(parameters):
                             px_n, py_n, pz_n = [p_scaler*ix for ix in holder['n5'][vertex][0:3]]                         
                             x_n, y_n, z_n = [d_scaler*ix for ix in holder['v'][vertex_n][0:3]]
                             dist_n = np.sqrt((x - x_n) ** 2 + (y - y_n) ** 2 + (z - z_n) ** 2)                           
-                            p_n = np.sqrt(px_n ** 2 + py_n ** 2 + pz_n ** 2)
-
-                            #definimos lo necesario para operar en la funcion
-                            p_vector = np.array([px, py, pz])
-                            r_n_vector = np.array([x, y, z])
-
-                            
-
-                            R1_meters = 1.500
-                            R2_meters = 1.590
-                            #We convert to millimeters since those are the standard units, otherwise
-                            # we multiply by d_scaler, which changes the units to cm
-                            R1 = R1_meters * 1000 * d_scaler
-                            R2 = R2_meters * 1000 * d_scaler
-                            #print("R1 unidades: ", R1)
-                            #print("R2 unidades: ", R2)
-
-                            #sys.exit("Salimos")
-
-                            #print("pz fuera zsimp: ",pz)
-                            timepositiveR1 = timepositive(p_vector, r_n_vector, R1)
-                            timenegativeR1 = timenegative(p_vector, r_n_vector, R1)
-
-                            timepositiveR2 = timepositive(p_vector, r_n_vector, R2)
-                            timenegativeR2 = timenegative(p_vector, r_n_vector, R2)
-
-                            #print(timepositiveR1, timenegativeR1, timepositiveR2, timenegativeR2)
-
-                            if((timepositiveR1 < 0 and timenegativeR1 < 0) or (timepositiveR2 < 0 and timenegativeR2 < 0)):
-                                sys.exit("t < 0 salimos para analizar el problema")
-
-                            epsilon1 = 0
-                            epsilon2 = 0
-
-                            epsilon1, epsilon2 = epsilonsevaluator(epsilon1,epsilon2,timepositiveR1,timenegativeR1,timepositiveR2,timenegativeR2)
-
-                            #print("epsilon1, epsilon2: ",epsilon1, epsilon2)
-
-                            #definimos el signo real de los tiempos
-                            if(epsilon1 ==1):
-                                time1 = timepositiveR1
-                            else:
-                                time1 = timenegativeR1
-                                print("caso epsilon1 = -1")
-                            
-                            if(epsilon2 ==1):
-                                time2 = timepositiveR2
-                            else:
-                                time2 = timenegativeR2
-                                print("caso epsilon2 = -1")
-
-                            #print("time1: ", time1)
-                            angletheta1 = functiontheta(time1, r_n_vector, p_vector)
-                            #print("time2: ", time2)
-                            angletheta2 = functiontheta(time2, r_n_vector, p_vector)
-
-                            #print("time1: ", time1)
-                            #angletheta1tasi = functiontheta2(time1, r_n_vector, p_vector)
-                            #print("time2: ", time2)
-                            #angletheta2tasi = functiontheta2(time2, r_n_vector, p_vector)
-
-                            #error_theta1 = abs((angletheta1 - angletheta1tasi)/angletheta1)*100
-                            #error_theta2 = abs((angletheta2 - angletheta2tasi)/angletheta2)
-
-                            #if(error_theta1 > 1 or error_theta2 > 1):
-                            #    print("discrepancia entre angulos: ", angletheta1, angletheta2, angletheta1tasi, angletheta2tasi)
-                            eta1 = eta_function(angletheta1)
-                            eta2 = eta_function(angletheta2)
-                            
-                            #print("eta1, eta2 main: ", eta1,eta2)
-                            R1, R2 = eta_functions_R_abs.eta_func_R_abs(eta1,eta2)*d_scaler
-
-                            #print("R1 y R2: ",R1,R2)
-
-                            zsimpl_value = zsimpl(p_vector, r_n_vector)
-                            z_atlas_value = z_atlas(p_vector, r_n_vector, R1, R2, epsilon1, epsilon2)
-                            #print("zsimpl: ", zsimpl_value)
-                            #print("zcrist: ", abs(c_z[-1]))
-                            #print("z_atlas_value: ", z_atlas_value)
-
-                            deltaz = np.abs((zsimpl_value - z_atlas_value)/z_atlas_value)*100
-
-                            #hay varios casos que parecieran no tener mucho error
-                           
-                            #if(deltaz > 10 ** 4 and np.abs(eta1) < 1.4 and np.abs(eta2) < 1.4):
-                            #    print("Caso anomalo")
-                            #    print("zsimpl_value, z_atlas_value",zsimpl_value, z_atlas_value)
-                            #    print("p_vector, z_atlas_value",p_vector, r_n_vector)
-                            #    print("R1, R2",R1, R2)
-
-                            #i = 0
-                            #print("casei: " ,i)
-                            #i = i + 1
-                            #if(i==10):
-                            #   sys.exit("Salimos")
+                            p_n = np.sqrt(px_n ** 2 + py_n ** 2 + pz_n ** 2)                         
 
                             conversionmanual = p_conversion/mass_conversion
                             prev_n2= p_n / mass_n
@@ -505,10 +494,9 @@ def main(parameters):
                         prompt_tof = (10**9)*np.sqrt(rf**2+zf**2)/(c_speed*1000)
                         rel_tof = tof - prompt_tof
 
-                        if (z_mode_atlas == True):
-                            z_origin = abs(z_atlas_value)
-                        else:
-                            z_origin = abs(c_z[-1])
+                        #z_atlas_value = z_atlas(p_vector, r_n_vector, R1, R2, epsilon1, epsilon2)
+                        z_origin = abs(z_atlas_value)
+                        
 
                         line.insert(13, str(rel_tof))
                         line.insert(13, str(z_origin))
@@ -547,8 +535,8 @@ def main(parameters):
     return
 
 t_n = None
-ATLASdet_radius= 1.5 #ATLAS detector radius
-ATLASdet_semilength = 3.512 #Half the length of the ATLAS radius (meters) (z_atlas)
+ATLASdet_radius= 1.5 #radio del detector de ATLAS
+ATLASdet_semilength = 3.512 #Mitad de la longitud del radio de atlas (metros) (z_atlas)
 
 # Adjusting detector boundaries
 r_detec = ATLASdet_radius * 1000  # m to mm
@@ -558,67 +546,24 @@ mass_conversion = 1.78266192*10**(-27)	#GeV to kg
 p_conversion = 5.344286*10**(-19)	#GeV to kg.m/s
 c_speed = 299792458	#m/s
 
-neutralinos = [9900022, 9900035]
+neutralinos = [9900035]
 
 destiny = "/Collider/scripts_2208/data/raw/"
 types = ["ZH","WH","TTH"]
 tevs = [13]
 
-# Example list of allcases (you can adjust it with your logic)
 allcases = []
 for typex in types[:]:
     for tevx in tevs[:]:
+        #Nuevamente, abrimos los hepmc para reescribirlos
         for file_inx in sorted(glob.glob(f"/Collider/scripts_2208/data/raw/run_{typex}*{tevx}.hepmc"))[:]:
-            allcases.append([file_inx, typex, True])  # Initially setting yes_zatlas to True
+            allcases.append([file_inx, typex])
 
-#print("All cases 1: ", allcases)
-#allcases = [[file_inx, typex, False] for file_inx, typex, _ in allcases]
+if __name__ == '__main__':
+    with Pool(1) as pool:
+        #print(allcases[-1:])
+        pool.map(main, allcases)
 
-#print("All cases 2: ", allcases)
-#sys.exit("Salimos")
-
-for iteration in [True, False]:  # First iteration with True, second with False
-
-    print("We are in iteration: ")
-    print(iteration)
-    if iteration == True:
-        # First iteration: yes_zatlas = True
-        # Modify allcases to include `True` for the yes_zatlas parameter
-        #allcases = [[file_inx, typex, True] for file_inx, typex, _ in allcases]
-
-        # Run the pool with yes_zatlas set to True
-        if __name__ == '__main__':
-            with Pool(1) as pool:
-                pool.map(main, allcases)
-    else:
-        print("Exiting the program.")
-        break 
-
-    """
-    #This is only useful when we want informaiton regarding z_simple. 
-    #We comment it because when working with a final vesion is not needed.
-
-    else:
-        # Second iteration: Ask the user if they want to generate the hepmc with zsimpl
-        user_input = input("Do you want to generate the hepmc with zsimpl? (yes/no): ").strip().lower()
-
-        if user_input == "no":
-            print("Exiting the program.")
-            break  # Exit the loop if the user doesn't want to continue
-        elif user_input == "yes":
-            # Get zsimp value from the user
-            zsimp = input("Please enter the zsimp value: ").strip()
-
-            # Modify allcases to include `False` for the yes_zatlas parameter
-            allcases = [[file_inx, typex, False] for file_inx, typex, _ in allcases]
-
-            # Run the pool with yes_zatlas set to False
-            if __name__ == '__main__':
-                with Pool(1) as pool:
-                    pool.map(main, allcases)
-    """
-
-        
         
 # Record the end time
 end_time = time.time()

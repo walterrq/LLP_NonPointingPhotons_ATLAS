@@ -71,8 +71,11 @@ for delta in deltas[1:]:
         values=[]
         for name in names[:]:
             #Con reg ex sacamos los siguientes datos del nombre del proceso (names)
-            mass = float(re.search(f'/.*M(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
-            alpha = float(re.search(f'/.*Alpha(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
+            #mass = float(re.search(f'/.*M(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
+            #alpha = float(re.search(f'/.*Alpha(\d+,?\d+|\d+)_', name).group(1).replace(',','.'))
+
+            mass = float(re.search(f'/.*M(-?\d+,?\d+|-?\d+)_', name).group(1).replace(',','.'))
+            alpha = float(re.search(f'/.*Alpha(-?\d+,\d+|-?\d+)_', name).group(1).replace(',','.'))
             
             # print("printeamos alpha")
             # print(alpha)

@@ -133,10 +133,6 @@ def main(input_file):
                 if abs(y) < 4.4: 
                     
                     ConstList = 0
-
-                    for i in range (jet.Constituents.GetEntries()):
-                        strings=str(jet.Constituents.At(i))
-                        print(jet.Constituents.At(i))
                     
                     if jet.Constituents.GetEntries() == 1:
 
@@ -201,10 +197,6 @@ def main(input_file):
     if (df.shape[0] == 0) or (df_leps.shape[0] == 0):
         print(df.shape,df_leps.shape)
         return
-    #!Descomentar esta linea cuando incluyamos los jets
-    # if df_jets.shape[0] == 0:
-    #     df_jets = pd.DataFrame(columns=["N", "pt", "eta", 'phi','M', 'MET', 'Constituents'])
-        #print(df_jets)
     
     #El comando sort_values ordena los valores primero en base al numero de eventos, y luego, en base al pt (de mayor a menor(del mas energetico al menos energetico))
     df = df.sort_values(by=['N', 'pt'], ascending=[True, False])
@@ -234,13 +226,12 @@ def main(input_file):
     print("Generando pickle fotones")
     df.to_pickle(out_file)
 
-    #!Descomentar la generacion de pickes para jets al terminar el debuggeo
-    # print("Generando pickle jets")
-    # df_jets = df_jets.sort_values(by=['N', 'pt'], ascending=[True, False])
-    # g = df_jets.groupby('N', as_index=False).cumcount()
-    # df_jets['id'] = g
-    # df_jets = df_jets.set_index(['N', 'id'])
-    # df_jets.to_pickle(out_file.replace('_photons','_jets'))
+    print("Generando pickle jets")
+    df_jets = df_jets.sort_values(by=['N', 'pt'], ascending=[True, False])
+    g = df_jets.groupby('N', as_index=False).cumcount()
+    df_jets['id'] = g
+    df_jets = df_jets.set_index(['N', 'id'])
+    df_jets.to_pickle(out_file.replace('_photons','_jets'))
 
     print("Generando pickle leptones")
     df_leps = df_leps.sort_values(by=['N', 'pt'], ascending=[True, False])

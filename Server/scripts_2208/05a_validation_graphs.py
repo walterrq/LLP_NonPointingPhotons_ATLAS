@@ -40,14 +40,14 @@ for delta in deltas[:]:
     #El camino largo seria ejecutar las simulaciones y cambiar los param_cards para dejar el alpha 5 y cambiamos las masas.
     #Camino corto: editar el codigo y que se ejecute el for en terminos de los alphas.
     
-    for alpha in ['4','5','6']:
+    for alpha in ['1','2','3','4','5','6','7','8','9','10']:
         burrito = []
         
         #lo que hacemos a continuacion es pasar por todos los json de una masa y un alpha pero con distintos procesos (WH,ZH,TTH)
         #Nuestro resultado final sera la suma de todos estos procesos
         #Esto es porque los resultados experimentales verdaderos no diferencian entre estos tipos de procesos. tenemos la suma de todo
         
-        input_files = list(reversed(sorted(glob.glob(origin + f"bin_*M9_*Alpha{alpha}_*.json"))))
+        input_files = list(reversed(sorted(glob.glob(origin + f"bin_*M1_*Alpha{alpha}_*.json"))))
         for input_file in input_files:
             process = re.search(f'/.*_13-(.*).json', input_file).group(1)
             with open(input_file, 'r') as file:

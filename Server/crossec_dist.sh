@@ -28,4 +28,4 @@ for tipo in ${tipos}
 		cd ..
 	done
 done
-#cp ${1}/scripts_2208/data/cross_section.dat /Collider/2023_LLHN_CONCYTEC/
+cp ${1}/scripts_2208/data/cross_section.dat /Collider/2023_LLHN_CONCYTEC/
