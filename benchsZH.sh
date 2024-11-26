@@ -18,7 +18,7 @@ benches=() #Inicializa lista de nombres de param_cards
 #benches1=$(sed -n '131,+8p' benchmarksX.txt)
 #benches1=$(sed -n '46,+2p' benchmarks.txt)
 #!Por ahora solo nos interesa la simulacion sobre un punto.
-benches1=$(sed -n '46,+2p' benchmarks.txt)
+benches1=$(sed -n '46,+0p' benchmarks.txt)
 #todo The variable benches1 will contain the text of the first line and the second line from the benchmarks.txt file. 
 #todo si bien la funcion principal de sed es reemplazar, al añadir -n pedimos que su comportamiento original cambie y solo lea las lineas que indicamos.
 #!Comenzamos en la instancia 1 y una mas. Solo usamos, por ende, dos cores. si hago '1,+4p' significa que uso 5 cores: la linea 1 mas 4 lineas mas.

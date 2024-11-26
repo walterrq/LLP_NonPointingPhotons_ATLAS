@@ -157,10 +157,15 @@ def main(variables):
     towers = pd.read_pickle(input_file.replace('photons', 'towers'))
 
     if leptons.size == 0 or photons.size == 0:
+        #print("ga")
         return
 
     # print("leptons antes de isolation muon")
     # print(leptons)
+
+    print("hello")
+
+    sys.exit
 
     print("Begin muon isolation")
 
@@ -384,6 +389,8 @@ Path(destiny).mkdir(exist_ok=True, parents=True)
 bases = []
 for xx in types:
     files_in = glob.glob(origin + f"full_op_{xx}*photons.pickle")
+
+    print("hello?")
     #Recordemos que la estructura de los pickles antes creados son:
     #complete_TTH_M3_Alpha1_13_photons.pickle
     #print(files_in)

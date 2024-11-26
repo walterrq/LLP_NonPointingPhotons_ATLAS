@@ -234,13 +234,12 @@ def main(input_file):
     print("Generando pickle fotones")
     df.to_pickle(out_file)
 
-    #!Descomentar la generacion de pickes para jets al terminar el debuggeo
-    # print("Generando pickle jets")
-    # df_jets = df_jets.sort_values(by=['N', 'pt'], ascending=[True, False])
-    # g = df_jets.groupby('N', as_index=False).cumcount()
-    # df_jets['id'] = g
-    # df_jets = df_jets.set_index(['N', 'id'])
-    # df_jets.to_pickle(out_file.replace('_photons','_jets'))
+    print("Generando pickle jets")
+    df_jets = df_jets.sort_values(by=['N', 'pt'], ascending=[True, False])
+    g = df_jets.groupby('N', as_index=False).cumcount()
+    df_jets['id'] = g
+    df_jets = df_jets.set_index(['N', 'id'])
+    df_jets.to_pickle(out_file.replace('_photons','_jets'))
 
     print("Generando pickle leptones")
     df_leps = df_leps.sort_values(by=['N', 'pt'], ascending=[True, False])
